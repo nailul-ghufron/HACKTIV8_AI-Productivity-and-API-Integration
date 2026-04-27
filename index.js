@@ -1,6 +1,5 @@
 require('dotenv').config();
 const express = require('express');
-const { GoogleGenerativeAI } = require('@google/generative-ai');
 const path = require('path');
 
 process.on('uncaughtException', (err) => {
@@ -22,19 +21,14 @@ const port = process.env.PORT || 3000;
 app.use(express.json({ limit: '10mb' }));
 app.use(express.static('public'));
 
-// ===== Gemini AI Setup =====
-const API_KEY = process.env.GEMINI_API_KEY ? process.env.GEMINI_API_KEY.trim() : null;
+// ===== Ollama AI Setup =====
+const OLLAMA_HOST = process.env.OLLAMA_HOST || 'http://localhost:11434';
+const OLLAMA_MODEL = process.env.OLLAMA_MODEL || 'llama3.2:1b';
 
-if (!API_KEY || API_KEY === 'your_api_key_here') {
-    console.warn('⚠️  GEMINI_API_KEY belum dikonfigurasi di file .env');
-} else {
-    const maskedKey = `${API_KEY.substring(0, 6)}...${API_KEY.substring(API_KEY.length - 4)}`;
-    console.log(`🔑 API Key terdeteksi: ${maskedKey}`);
-}
+console.log(`🤖 Ollama Host  : ${OLLAMA_HOST}`);
+console.log(`🧠 Ollama Model : ${OLLAMA_MODEL}`);
 
-const genAI = new GoogleGenerativeAI(API_KEY || 'placeholder');
-
-// System Instruction — Tuned "Budi" Persona (Stage 3)
+// System Instruction — Tuned "Budi" Persona
 const SYSTEM_INSTRUCTION = `Kamu adalah 'Budi', seorang Senior Engineering Manager dengan pengalaman 12+ tahun di perusahaan Tech ternama di Indonesia (pernah bekerja di Tokopedia, Gojek, dan sekarang di startup unicorn).
 
 KEPRIBADIAN & GAYA BAHASA:
@@ -59,41 +53,37 @@ FORMAT RESPONS:
 - Gunakan bullet points untuk list.
 - Untuk code snippet, gunakan backtick.`;
 
-const model = genAI.getGenerativeModel({
-    model: "gemini-1.5-flash",
-    systemInstruction: SYSTEM_INSTRUCTION,
-});
-
-const generationConfig = {
-    temperature: 0.7,
-    topP: 0.9,
-    topK: 40,
-    maxOutputTokens: 1024,
-};
-
-// Verify connection at startup
-/*
-async function verifyConnection() {
-    if (!API_KEY || API_KEY === 'your_api_key_here') return;
+// Verify Ollama connection at startup
+async function verifyOllamaConnection() {
     try {
-        await model.generateContent({ contents: [{ role: 'user', parts: [{ text: 'hi' }] }] });
-        console.log('✅ Gemini API connection verified.');
-    } catch (error) {
-        console.error('❌ Gemini API Verification Failed:', error.message);
-        if (error.message.includes('404') || error.message.includes('not found')) {
-            console.error('💡 Tip: Pastikan model "gemini-1.5-flash" tersedia untuk API Key kamu atau coba aktifkan "Generative Language API" di Google Cloud Console.');
+        const res = await fetch(`${OLLAMA_HOST}/api/tags`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        const models = (data.models || []).map(m => m.name);
+        const modelAvailable = models.some(m => m.startsWith(OLLAMA_MODEL.split(':')[0]));
+        if (modelAvailable) {
+            console.log(`✅ Ollama terkoneksi. Model "${OLLAMA_MODEL}" tersedia.`);
+        } else {
+            console.warn(`⚠️  Model "${OLLAMA_MODEL}" tidak ditemukan. Model tersedia: ${models.join(', ') || 'tidak ada'}`);
+            console.warn(`💡 Jalankan: ollama pull ${OLLAMA_MODEL}`);
         }
+    } catch (err) {
+        console.error(`❌ Tidak dapat terhubung ke Ollama di ${OLLAMA_HOST}:`, err.message);
+        console.error('💡 Pastikan Ollama sudah berjalan: ollama serve');
     }
 }
-verifyConnection();
-*/
+verifyOllamaConnection();
 
 // ===== Chat History Store (in-memory per session) =====
+// Format: array of { role: 'user' | 'assistant' | 'system', content: string }
 const chatSessions = new Map();
 
 function getOrCreateSession(sessionId) {
     if (!chatSessions.has(sessionId)) {
-        chatSessions.set(sessionId, []);
+        // Inject system prompt sebagai pesan pertama
+        chatSessions.set(sessionId, [
+            { role: 'system', content: SYSTEM_INSTRUCTION }
+        ]);
     }
     return chatSessions.get(sessionId);
 }
@@ -104,8 +94,9 @@ function getOrCreateSession(sessionId) {
 app.get('/api/health', (req, res) => {
     res.json({
         status: 'ok',
-        apiKeyConfigured: !!(API_KEY && API_KEY !== 'your_api_key_here'),
-        model: 'gemini-1.5-flash',
+        provider: 'ollama',
+        ollamaHost: OLLAMA_HOST,
+        model: OLLAMA_MODEL,
     });
 });
 
@@ -118,27 +109,44 @@ app.post('/api/chat', async (req, res) => {
             return res.status(400).json({ error: 'Message is required' });
         }
 
-        // Get conversation history for this session
-        const history = getOrCreateSession(sessionId);
+        // Get conversation history (includes system prompt)
+        const messages = getOrCreateSession(sessionId);
 
-        const chatSession = model.startChat({
-            generationConfig,
-            history: history,
+        // Tambahkan pesan user ke history
+        messages.push({ role: 'user', content: message });
+
+        // Kirim ke Ollama /api/chat
+        const ollamaRes = await fetch(`${OLLAMA_HOST}/api/chat`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                model: OLLAMA_MODEL,
+                messages: messages,
+                stream: false,
+                options: {
+                    temperature: 0.7,
+                    top_p: 0.9,
+                    num_predict: 1024,
+                },
+            }),
         });
 
-        const result = await chatSession.sendMessage(message);
-        const response = result.response;
-        const text = response.text();
+        if (!ollamaRes.ok) {
+            const errText = await ollamaRes.text();
+            throw new Error(`Ollama error ${ollamaRes.status}: ${errText}`);
+        }
 
-        // Save to history for conversation memory
-        history.push(
-            { role: 'user', parts: [{ text: message }] },
-            { role: 'model', parts: [{ text: text }] }
-        );
+        const data = await ollamaRes.json();
+        const text = data.message?.content || '';
 
-        // Limit history to last 20 exchanges (40 entries) to prevent memory bloat
-        if (history.length > 40) {
-            history.splice(0, history.length - 40);
+        // Simpan balasan asisten ke history
+        messages.push({ role: 'assistant', content: text });
+
+        // Batasi history: pertahankan system prompt + 20 exchange terakhir (41 entri)
+        if (messages.length > 41) {
+            const systemMsg = messages[0];
+            messages.splice(1, messages.length - 41);
+            if (messages[0] !== systemMsg) messages.unshift(systemMsg);
         }
 
         res.json({ reply: text });
@@ -146,17 +154,16 @@ app.post('/api/chat', async (req, res) => {
         const fs = require('fs');
         const logMsg = `[${new Date().toISOString()}] Error: ${error.message}\n${error.stack}\n`;
         fs.appendFileSync('error.log', logMsg);
-        
-        console.error('Error in /api/chat:', error.message || error);
-        
-        const isApiKeyError = error.message?.toLowerCase().includes('api_key') || 
-                             error.message?.toLowerCase().includes('api key') ||
-                             error.message?.toLowerCase().includes('invalid') ||
-                             error.message?.toLowerCase().includes('expired');
 
-        res.status(isApiKeyError ? 401 : 500).json({
-            error: isApiKeyError
-                ? 'API Key tidak valid atau bermasalah. Periksa konfigurasi GEMINI_API_KEY di file .env'
+        console.error('Error in /api/chat:', error.message || error);
+
+        const isConnectionError = error.message?.toLowerCase().includes('fetch') ||
+                                  error.message?.toLowerCase().includes('econnrefused') ||
+                                  error.message?.toLowerCase().includes('ollama');
+
+        res.status(isConnectionError ? 503 : 500).json({
+            error: isConnectionError
+                ? `Tidak dapat terhubung ke Ollama di ${OLLAMA_HOST}. Pastikan Ollama sudah berjalan.`
                 : 'Gagal mendapatkan respons dari AI. Coba lagi nanti.'
         });
     }

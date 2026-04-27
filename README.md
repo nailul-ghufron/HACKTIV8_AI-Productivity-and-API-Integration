@@ -1,10 +1,10 @@
 # KarierKu AI — Tech Career & Interview Mentor 🚀
 
-> Asisten virtual berbasis **Gemini 1.5 Flash** yang dirancang khusus untuk membantu pencari kerja di bidang IT — mulai dari simulasi *technical interview*, review CV ala ATS, hingga saran karir dari mentor virtual bernama **"Budi"**.
+> Asisten virtual berbasis **Ollama Local AI (llama3.2:1b)** yang dirancang khusus untuk membantu pencari kerja di bidang IT — mulai dari simulasi *technical interview*, review CV ala ATS, hingga saran karir dari mentor virtual bernama **"Budi"**.
 
 <div align="center">
 
-![Gemini AI](https://img.shields.io/badge/Powered%20by-Gemini%201.5%20Flash-4285F4?style=for-the-badge&logo=google&logoColor=white)
+![Ollama](https://img.shields.io/badge/Powered%20by-Ollama%20(Llama3.2)-FFFFFF?style=for-the-badge&logo=ollama&logoColor=black)
 ![Node.js](https://img.shields.io/badge/Node.js-22.x-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)
 ![Express](https://img.shields.io/badge/Express-5.x-000000?style=for-the-badge&logo=express&logoColor=white)
 ![Status](https://img.shields.io/badge/Status-Production%20Ready-brightgreen?style=for-the-badge)
@@ -28,7 +28,7 @@
 
 ## 📋 Tentang Proyek
 
-**KarierKu AI** adalah aplikasi chatbot *fullstack* yang menggabungkan kecerdasan buatan Google Gemini dengan antarmuka pengguna yang modern dan responsif. Proyek ini dikembangkan sebagai **Final Project Hacktiv8** untuk kelas *AI Productivity & API Integration*.
+**KarierKu AI** adalah aplikasi chatbot *fullstack* yang menggabungkan kecerdasan buatan Ollama secara lokal dengan antarmuka pengguna yang modern dan responsif. Proyek ini dikembangkan sebagai **Final Project Hacktiv8** untuk kelas *AI Productivity & API Integration*.
 
 Chatbot berperan sebagai **"Budi"** — seorang Senior Engineering Manager fiktif dengan 12+ tahun pengalaman di perusahaan tech Indonesia (Tokopedia, Gojek) yang membantu junior developer mempersiapkan karir IT mereka.
 
@@ -53,8 +53,8 @@ Chatbot berperan sebagai **"Budi"** — seorang Senior Engineering Manager fikti
 |-------|-----------|-------|
 | **Frontend** | HTML5, Vanilla CSS (Custom Design System), Vanilla JavaScript | — |
 | **Backend** | Node.js + Express.js | Express 5.x |
-| **AI Engine** | Google Gemini API (`@google/generative-ai`) | 0.24.x |
-| **Model** | `gemini-1.5-flash` | — |
+| **AI Engine** | Ollama Local REST API (Native Fetch) | — |
+| **Model** | `llama3.2:1b` | — |
 | **Config** | dotenv | 17.x |
 | **Dev Tool** | nodemon | 3.x |
 
@@ -63,7 +63,7 @@ Chatbot berperan sebagai **"Budi"** — seorang Senior Engineering Manager fikti
 ## ⚙️ Konfigurasi AI (Sesuai PRD)
 
 ```
-Model            : gemini-1.5-flash
+Model            : llama3.2:1b
 Temperature      : 0.7   → keseimbangan antara faktual & kreatif
 Top P            : 0.9   → variasi kosakata yang natural
 Top K            : 40
@@ -92,15 +92,18 @@ npm install
 
 ### 3. Konfigurasi Environment
 
-Buat file `.env` di root folder (jangan di-push ke GitHub):
+Buat file `.env` di root folder:
 
 ```env
 PORT=3000
-GEMINI_API_KEY=your_gemini_api_key_here
 NODE_ENV=development
+
+# Ollama Local AI
+OLLAMA_HOST=http://localhost:11434
+OLLAMA_MODEL=llama3.2:1b
 ```
 
-> 🔑 Dapatkan API Key gratis di [Google AI Studio](https://aistudio.google.com/apikey)
+> 💡 Pastikan [Ollama](https://ollama.com/) sudah terinstall dan berjalan di localhost, dan model `llama3.2:1b` sudah di-pull (`ollama pull llama3.2:1b`).
 
 ### 4. Jalankan Server
 
@@ -128,8 +131,9 @@ Output yang diharapkan:
 ```json
 {
   "status": "ok",
-  "apiKeyConfigured": true,
-  "model": "gemini-1.5-flash"
+  "provider": "ollama",
+  "ollamaHost": "http://localhost:11434",
+  "model": "llama3.2:1b"
 }
 ```
 
@@ -140,11 +144,11 @@ Output yang diharapkan:
 ```
 HACKTIV8_AI-Productivity-and-API-Integration/
 │
-├── 🖥️  index.js              # Backend: Express server + Gemini AI logic
-├── 🧪 test-gemini.js         # Script uji koneksi Gemini API
+├── 🖥️  index.js              # Backend: Express server + Ollama AI logic
+├── 🧪 test-ollama.js         # Script uji koneksi Ollama API
 ├── 📦 package.json           # Dependencies & npm scripts
 │
-├── 🔐 .env                   # API Key (TIDAK di-push ke GitHub)
+├── 🔐 .env                   # Konfigurasi Environment variables
 ├── 🚫 .gitignore             # Mengecualikan .env & node_modules
 │
 ├── 📋 prd.md                 # Product Requirements Document
@@ -207,7 +211,7 @@ Backend (Express.js)
     │
     │  3. Ambil history sesi + susun prompt
     ▼
-Google Gemini API (gemini-1.5-flash)
+Ollama API Local (llama3.2:1b)
     │
     │  4. AI response + simpan ke history
     ▼
@@ -227,10 +231,9 @@ User (Chat UI terupdate)
 - [x] **Parameter AI** dikonfigurasi sesuai PRD (temperature, topP, maxTokens)
 - [x] **Session-based chat history** — AI mengingat konteks percakapan
 - [x] **UI responsif** — mendukung dark mode, light mode, dan mobile
-- [x] **Error handling** — pesan error informatif jika API Key bermasalah
+- [x] **Error handling** — pesan error informatif jika Ollama tidak aktif
 - [x] **Repositori GitHub Public** dengan source code lengkap
 - [x] **Screenshot UI** tersedia di folder `/screenshots`
-- [x] Submit link GitHub & screenshot sebelum deadline
 
 ---
 
