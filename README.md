@@ -230,7 +230,7 @@ User (Chat UI terupdate)
 - [x] **Error handling** — pesan error informatif jika API Key bermasalah
 - [x] **Repositori GitHub Public** dengan source code lengkap
 - [x] **Screenshot UI** tersedia di folder `/screenshots`
-- [ ] Submit link GitHub & screenshot sebelum deadline
+- [x] Submit link GitHub & screenshot sebelum deadline
 
 ---
 
