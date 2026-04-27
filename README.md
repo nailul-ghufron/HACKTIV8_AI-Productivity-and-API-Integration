@@ -80,7 +80,7 @@ Max Output Tokens: 1024  → ringkas dan to-the-point
 ### 1. Clone Repository
 
 ```bash
-git clone https://github.com/<username>/HACKTIV8_AI-Productivity-and-API-Integration.git
+git clone https://github.com/nailul-ghufron/HACKTIV8_AI-Productivity-and-API-Integration.git
 cd HACKTIV8_AI-Productivity-and-API-Integration
 ```
 
