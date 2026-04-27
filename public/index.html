@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KarierKu AI — Tech Career & Interview Mentor</title>
+    <meta name="description" content="KarierKu AI adalah asisten karir berbasis AI untuk membantu pencari kerja di bidang IT. Simulasi interview, review CV, dan tips karir dari mentor virtual Budi.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Animated background -->
+    <div class="bg-grid"></div>
+    <div class="bg-glow bg-glow--1"></div>
+    <div class="bg-glow bg-glow--2"></div>
+    <div class="bg-glow bg-glow--3"></div>
+
+    <div id="app">
+        <!-- Sidebar -->
+        <aside id="sidebar" class="sidebar">
+            <div class="sidebar__brand">
+                <div class="sidebar__logo">
+                    <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+                        <rect width="28" height="28" rx="8" fill="url(#logo-grad)"/>
+                        <path d="M8 14L12 18L20 10" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        <defs><linearGradient id="logo-grad" x1="0" y1="0" x2="28" y2="28"><stop stop-color="#6366f1"/><stop offset="1" stop-color="#a855f7"/></linearGradient></defs>
+                    </svg>
+                </div>
+                <span class="sidebar__title">KarierKu AI</span>
+            </div>
+
+            <nav class="sidebar__nav">
+                <button class="sidebar__btn sidebar__btn--new" id="btn-new-chat">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    <span>New Chat</span>
+                </button>
+                <div class="sidebar__divider"></div>
+                <button class="sidebar__btn sidebar__btn--active" data-mode="chat" id="btn-chat">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+                    <span>Chat Mentor</span>
+                </button>
+                <button class="sidebar__btn" data-mode="interview" id="btn-interview">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4-4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+                    <span>Simulasi Interview</span>
+                </button>
+                <button class="sidebar__btn" data-mode="cv" id="btn-cv">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10,9 9,9 8,9"/></svg>
+                    <span>Review CV</span>
+                </button>
+            </nav>
+
+            <div class="sidebar__footer">
+                <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+                    <svg class="theme-toggle__icon theme-toggle__icon--dark" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+                    <svg class="theme-toggle__icon theme-toggle__icon--light" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+                    <span id="theme-label">Dark Mode</span>
+                </button>
+                <div class="sidebar__credit">
+                    Powered by <strong>Gemini AI</strong>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Mobile header -->
+        <header class="mobile-header" id="mobile-header">
+            <button class="mobile-header__menu" id="sidebar-toggle" aria-label="Open menu">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+            </button>
+            <span class="mobile-header__title">KarierKu AI</span>
+            <button class="theme-toggle theme-toggle--mobile" id="theme-toggle-mobile" aria-label="Toggle theme">
+                <svg class="theme-toggle__icon theme-toggle__icon--dark" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+                <svg class="theme-toggle__icon theme-toggle__icon--light" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+            </button>
+        </header>
+
+        <!-- Sidebar overlay for mobile -->
+        <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+        <!-- Main chat area -->
+        <main class="main" id="main">
+            <!-- Welcome screen -->
+            <div class="welcome" id="welcome-screen">
+                <div class="welcome__badge">
+                    <span class="welcome__badge-dot"></span>
+                    Online
+                </div>
+                <h1 class="welcome__title">
+                    Halo! Saya <span class="gradient-text">Budi</span> 👋
+                </h1>
+                <p class="welcome__subtitle">
+                    Senior Engineering Manager & Mentor Karir IT kamu. Mau tanya apa hari ini?
+                </p>
+
+                <div class="welcome__cards">
+                    <button class="welcome__card" data-prompt="Saya mau simulasi technical interview untuk posisi Frontend Developer (React.js). Mulai interview-nya!">
+                        <div class="welcome__card-icon">🎯</div>
+                        <div class="welcome__card-content">
+                            <strong>Simulasi Interview</strong>
+                            <span>Latihan technical interview React.js</span>
+                        </div>
+                    </button>
+                    <button class="welcome__card" data-prompt="Berikan saya tips untuk membuat CV ATS-Friendly sebagai Junior Developer">
+                        <div class="welcome__card-icon">📄</div>
+                        <div class="welcome__card-content">
+                            <strong>Tips CV ATS</strong>
+                            <span>Buat CV yang lolos screening</span>
+                        </div>
+                    </button>
+                    <button class="welcome__card" data-prompt="Apa saja skill yang paling dicari perusahaan tech di Indonesia tahun ini?">
+                        <div class="welcome__card-icon">🚀</div>
+                        <div class="welcome__card-content">
+                            <strong>Trending Skills</strong>
+                            <span>Skill paling dicari tahun ini</span>
+                        </div>
+                    </button>
+                    <button class="welcome__card" data-prompt="Saya baru lulus bootcamp, bagaimana strategi terbaik untuk mendapatkan pekerjaan pertama sebagai developer?">
+                        <div class="welcome__card-icon">💡</div>
+                        <div class="welcome__card-content">
+                            <strong>Career Advice</strong>
+                            <span>Strategi cari kerja pertama</span>
+                        </div>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Chat messages -->
+            <div class="chat" id="chat-box"></div>
+
+            <!-- Input area -->
+            <div class="input-area" id="input-area">
+                <div class="input-area__container">
+                    <div class="input-area__mode-badge" id="mode-badge">
+                        <span id="mode-badge-text">💬 Chat Mentor</span>
+                    </div>
+                    <div class="input-area__row">
+                        <label class="input-area__upload" id="upload-label" title="Upload CV (PDF/Image)">
+                            <input type="file" id="file-input" accept=".pdf,.png,.jpg,.jpeg,.webp" hidden>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.49"/></svg>
+                        </label>
+                        <textarea id="user-input" placeholder="Ketik pertanyaan kamu di sini..." rows="1" autofocus></textarea>
+                        <button class="input-area__send" id="send-btn" disabled aria-label="Send message">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                        </button>
+                    </div>
+                    <div class="input-area__file-preview" id="file-preview" hidden>
+                        <div class="file-chip" id="file-chip">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
+                            <span id="file-name"></span>
+                            <button class="file-chip__remove" id="file-remove" aria-label="Remove file">&times;</button>
+                        </div>
+                    </div>
+                </div>
+                <p class="input-area__disclaimer">KarierKu AI dapat memberikan saran yang tidak akurat. Selalu verifikasi informasi penting.</p>
+            </div>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
